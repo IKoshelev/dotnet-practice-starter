@@ -10,6 +10,8 @@ services:
       - type: bind
         source: ./app
         target: /source/app
+    secrets:
+      - db-password
     depends_on:
        db:
          condition: service_healthy
@@ -38,8 +40,7 @@ services:
         target: /var/opt/mssql-mount
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=TTTTtt444444%%%%
-      #- MSSQL_SA_PASSWORD_FILE=/run/secrets/db-password
+      - MSSQL_SA_PASSWORD_FILE=/run/secrets/db-password
       
     ## switch from ports to expose if you don't need to expose port to hosting machine network
     #expose:
@@ -48,7 +49,7 @@ services:
       - 1433:1433
 
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "TTTTtt444444%%%%" -Q "SELECT 1" -b -o /dev/null
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $(cat /run/secrets/db-password) -Q "SELECT 1" -b -o /dev/null
       interval: 10s
       timeout: 3s
       retries: 10
