@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   dotnet-sdk:
     build:
@@ -8,38 +10,50 @@ services:
       - type: bind
         source: ./app
         target: /source/app
+    depends_on:
+       db:
+         condition: service_healthy
     
 
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
+#The `db-password` secret is used
 # to set the database password. You must create `db/password.txt` and add
 # a password of your choosing to it before running `docker compose up`.
-#     depends_on:
-#       db:
-#         condition: service_healthy
-#   db:
-#     image: postgres
-#     restart: always
-#     user: postgres
-#     secrets:
-#       - db-password
-#     volumes:
-#       - db-data:/var/lib/postgresql/data
-#     environment:
-#       - POSTGRES_DB=example
-#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
-#     expose:
-#       - 5432
-#     healthcheck:
-#       test: [ "CMD", "pg_isready" ]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-# volumes:
-#   db-data:
-# secrets:
-#   db-password:
-#     file: db/password.txt
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    secrets:
+      - db-password
+    # DB files will be stored in ./db/data directory
+    volumes:
+      - type: bind
+        source: ./db/mount/data
+        target: /var/opt/mssql/data/mount
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=TTTTtt888%%%%
+      
+    ## switch from ports to expose if you don't need to expose port to hosting machine network
+    #expose:
+    #  - 1433
+    ports:
+      - 1433:1433
+
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "TTTTtt888%%%%" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+      
+## we wil mount folder instead 
+#volumes:
+#  db-data:
+secrets:
+  db-password:
+    file: db/password.txt
 
