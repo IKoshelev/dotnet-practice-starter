@@ -17,7 +17,7 @@ services:
          condition: service_healthy
     
 
-#The `db-password` secret is used
+# The `db-password` secret is used
 # to set the database password. You must create `db/password.txt` and add
 # a password of your choosing to it before running `docker compose up`.
   db:
