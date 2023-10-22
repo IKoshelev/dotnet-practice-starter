@@ -1,9 +1,10 @@
 version: "3.8"
 
 services:
+
   dotnet-sdk:
     build:
-      context: ./app
+      context: ./app # see ./app/Dockerfile
     ports:
       - 8080:8080
     volumes:
@@ -16,10 +17,6 @@ services:
        db:
          condition: service_healthy
     
-
-# The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker compose up`.
   db:
     image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
     deploy:
@@ -30,7 +27,8 @@ services:
         window: 120s
     secrets:
       - db-password
-    # DB files will be stored in ./db/data directory
+    # if you want to store DB file and log in host - 
+    # put them into /var/opt/mssql-mount
     volumes:
       - type: volume
         source: db-data
@@ -40,14 +38,12 @@ services:
         target: /var/opt/mssql-mount
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD_FILE=/run/secrets/db-password
-      
-    ## switch from ports to expose if you don't need to expose port to hosting machine network
+      - MSSQL_SA_PASSWORD_FILE=/run/secrets/db-password 
+    ## switch from ports to expose if you don't need to access DB from hosting machine
     #expose:
     #  - 1433
     ports:
       - 1433:1433
-
     healthcheck:
       test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $(cat /run/secrets/db-password) -Q "SELECT 1" -b -o /dev/null
       interval: 10s
