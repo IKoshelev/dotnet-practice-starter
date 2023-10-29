@@ -13,9 +13,9 @@ services:
         target: /source/app
     secrets:
       - ms-sql-db-password
-    depends_on:
-       ms-sql-db:
-         condition: service_healthy
+    # depends_on:
+    #    ms-sql-db:
+    #      condition: service_healthy
     
   ms-sql-db:
     image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
