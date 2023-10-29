@@ -15,7 +15,7 @@ internal partial class Program
 
     private static async Task Main(string[] args)
     {
-        Console.WriteLine("Starting console app.");
+        Console.WriteLine($"Starting console app. IsDocker={IsDocker}");
 
         var rootConfiguration = WithConsoleNotification("Configuration read", ReadConfiguration);
 
