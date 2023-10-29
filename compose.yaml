@@ -13,6 +13,8 @@ services:
         target: /source/app
     secrets:
       - ms-sql-db-password
+    environment:
+      - IS_DOCKER=TRUE
     # depends_on:
     #    ms-sql-db:
     #      condition: service_healthy

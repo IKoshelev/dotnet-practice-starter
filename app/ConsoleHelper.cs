@@ -1,3 +1,4 @@
+namespace Practice.Csharp;
 
 public static class ConsoleHelper
 {
@@ -9,7 +10,18 @@ public static class ConsoleHelper
 
     public static string Color(string color, string text) => $"{color}{text}{NORMAL}";
 
-    public static async Task Check(
+    public static T WithConsoleNotification<T>(
+        string actionName,
+        Func<T> actionFn)
+    {
+        var actionNameBlue = Color(BLUE, actionName);
+        Console.WriteLine($"{actionNameBlue} start");
+        var result = actionFn();
+        Console.WriteLine($"{actionNameBlue} done");
+        return result;
+    }
+
+    public static async Task RunCheck(
         string sectionName,
         Func<Task<bool>> checkFn)
     {

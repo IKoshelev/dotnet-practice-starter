@@ -3,20 +3,27 @@ using Microsoft.Data.SqlClient;
 using Dapper;
 using System.Net;
 using System.Text;
-using static ConsoleHelper;
+using static Practice.Csharp.ConsoleHelper;
+using Microsoft.Extensions.Configuration;
 
+namespace Practice.Csharp;
 
 internal partial class Program
 {
+    public static bool IsDocker = Environment.GetEnvironmentVariable("IS_DOCKER")
+                                    ?.Equals( "TRUE", StringComparison.InvariantCultureIgnoreCase) ?? false;
+
     private static async Task Main(string[] args)
     {
         Console.WriteLine("Starting console app.");
 
-        await Task.WhenAll(
-            CheckMsSqlDbConnection()
-        );
+        var rootConfiguration = WithConsoleNotification("Configuration read", ReadConfiguration);
 
-        Console.WriteLine("Checks section finished.");
+        await WithConsoleNotification("Infrastructure checks", 
+            async () => await Task.WhenAll(
+                CheckMsSqlDbConnection(
+                    rootConfiguration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!)
+        ));
 
         using var listener = new HttpListener();
         listener.Prefixes.Add("http://+:8080/");
@@ -44,15 +51,31 @@ internal partial class Program
         }
     }
 
-    private static async Task CheckMsSqlDbConnection()
+    private static IConfigurationRoot ReadConfiguration()
     {
-        await Check("ms-sql-db", async () => 
+        IConfigurationBuilder builder = new ConfigurationBuilder();
+
+        builder.AddJsonFile("appsettings.json", false, true);
+
+        if (IsDocker)
+        {
+            builder.AddJsonFile("appsettings.docker.json", false, true);
+        }
+
+        IConfigurationRoot root = builder.Build();
+
+        return root;
+    }
+
+    private static async Task CheckMsSqlDbConnection(MsSqlDbConfig config)
+    {
+        await RunCheck("ms-sql-db", async () => 
         {
             var password = File.ReadAllText("/run/secrets/ms-sql-db-password");
 
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
-            builder.DataSource = "ms-sql-db,1433";
+            builder.DataSource = config.Address;
             builder.UserID = "sa";
             builder.Password = password;
             builder.InitialCatalog = "master";
