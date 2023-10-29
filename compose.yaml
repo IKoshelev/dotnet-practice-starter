@@ -12,12 +12,12 @@ services:
         source: ./app
         target: /source/app
     secrets:
-      - db-password
+      - ms-sql-db-password
     depends_on:
-       db:
+       ms-sql-db:
          condition: service_healthy
     
-  db:
+  ms-sql-db:
     image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
     deploy:
       restart_policy:
@@ -26,26 +26,26 @@ services:
         max_attempts: 3
         window: 120s
     secrets:
-      - db-password
+      - ms-sql-db-password
     # if you want to store DB file and log in host - 
     # put them into /var/opt/mssql-mount
     volumes:
       - type: volume
-        source: db-data
+        source: ms-sql-db-data
         target: /var/opt/mssql
       - type: bind
-        source: ./db/mount
+        source: ./infrastructure/ms-sql-db/mount
         target: /var/opt/mssql-mount
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD_FILE=/run/secrets/db-password 
+      - MSSQL_SA_PASSWORD_FILE=/run/secrets/ms-sql-db-password 
     ## switch from ports to expose if you don't need to access DB from hosting machine
     #expose:
     #  - 1433
     ports:
       - 1433:1433
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $(cat /run/secrets/db-password) -Q "SELECT 1" -b -o /dev/null
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $(cat /run/secrets/ms-sql-db-password) -Q "SELECT 1" -b -o /dev/null
       interval: 10s
       timeout: 3s
       retries: 10
@@ -53,8 +53,8 @@ services:
       
 ## we wil mount folder instead 
 volumes:
-  db-data:
+  ms-sql-db-data:
 secrets:
-  db-password:
-    file: db/password.txt
+  ms-sql-db-password:
+    file: infrastructure/ms-sql-db/password.txt
 

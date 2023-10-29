@@ -11,7 +11,7 @@ internal class Program
     {
         Console.WriteLine("Hello, World!");
 
-        var password = File.ReadAllText("/run/secrets/db-password");
+        var password = File.ReadAllText("/run/secrets/ms-sql-db-password");
 
         SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
