@@ -1,33 +1,22 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System.Data;
 using Microsoft.Data.SqlClient;
 using Dapper;
 using System.Net;
 using System.Text;
+using static ConsoleHelper;
 
-internal class Program
+
+internal partial class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        Console.WriteLine("Starting console app.");
 
-        var password = File.ReadAllText("/run/secrets/ms-sql-db-password");
+        await Task.WhenAll(
+            CheckMsSqlDbConnection()
+        );
 
-        SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-
-        builder.DataSource = "db,1433"; 
-        builder.UserID = "sa";            
-        builder.Password = password;     
-        builder.InitialCatalog = "master";
-        builder.MultipleActiveResultSets = true;
-        builder.Encrypt = true;
-        builder.TrustServerCertificate = true;
-
-        using IDbConnection db = new SqlConnection(builder.ConnectionString);
-
-        var result = db.Query<int>("SELECT 1").ToList();
-
-        Console.WriteLine(result[0]);
+        Console.WriteLine("Checks section finished.");
 
         using var listener = new HttpListener();
         listener.Prefixes.Add("http://+:8080/");
@@ -53,5 +42,28 @@ internal class Program
             using Stream ros = resp.OutputStream;
             ros.Write(buffer, 0, buffer.Length);
         }
+    }
+
+    private static async Task CheckMsSqlDbConnection()
+    {
+        await Check("ms-sql-db", async () => 
+        {
+            var password = File.ReadAllText("/run/secrets/ms-sql-db-password");
+
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+            builder.DataSource = "ms-sql-db,1433";
+            builder.UserID = "sa";
+            builder.Password = password;
+            builder.InitialCatalog = "master";
+            builder.MultipleActiveResultSets = true;
+            builder.Encrypt = true;
+            builder.TrustServerCertificate = true;
+
+            using var db = new SqlConnection(builder.ConnectionString);
+            var result = (await db.QueryAsync<int>("SELECT 789")).ToArray();
+
+            return result[0] == 789;
+        });
     }
 }
