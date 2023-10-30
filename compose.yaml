@@ -13,6 +13,7 @@ services:
         target: /source/app
     secrets:
       - ms-sql-db-password
+      - mongo-password
     environment:
       - IS_DOCKER=TRUE
     # depends_on:
