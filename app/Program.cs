@@ -71,12 +71,12 @@ internal partial class Program
     {
         await RunCheck("ms-sql-db", async () => 
         {
-            var password = File.ReadAllText("/run/secrets/ms-sql-db-password");
+            var password = File.ReadAllText(config.PasswordFile);
 
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
             builder.DataSource = config.Address;
-            builder.UserID = "sa";
+            builder.UserID = config.UserName;
             builder.Password = password;
             builder.InitialCatalog = "master";
             builder.MultipleActiveResultSets = true;
