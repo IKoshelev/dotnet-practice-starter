@@ -5,13 +5,15 @@ using System.Net;
 using System.Text;
 using static Practice.Csharp.ConsoleHelper;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace Practice.Csharp;
 
 internal partial class Program
 {
     public static bool IsDocker = Environment.GetEnvironmentVariable("IS_DOCKER")
-                                    ?.Equals( "TRUE", StringComparison.InvariantCultureIgnoreCase) ?? false;
+                                    ?.Equals("TRUE", StringComparison.InvariantCultureIgnoreCase) ?? false;
 
     private static async Task Main(string[] args)
     {
@@ -19,10 +21,13 @@ internal partial class Program
 
         var rootConfiguration = WithConsoleNotification("Configuration read", ReadConfiguration);
 
-        await WithConsoleNotification("Infrastructure checks", 
+        await WithConsoleNotification("Infrastructure checks",
             async () => await Task.WhenAll(
                 CheckMsSqlDbConnection(
-                    rootConfiguration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!)
+                    rootConfiguration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!),
+                CheckMongoConnection(
+                    rootConfiguration.GetRequiredSection(MongoConfig.SectionPath).Get<MongoConfig>()!
+                )
         ));
 
         using var listener = new HttpListener();
@@ -69,7 +74,7 @@ internal partial class Program
 
     private static async Task CheckMsSqlDbConnection(MsSqlDbConfig config)
     {
-        await RunCheck("ms-sql-db", async () => 
+        await RunCheck("ms-sql-db", async () =>
         {
             var password = File.ReadAllText(config.PasswordFile);
 
@@ -88,5 +93,40 @@ internal partial class Program
 
             return result[0] == 789;
         });
+    }
+
+    public class MongoDocument<T>
+    {
+        public ObjectId Id { get; set; }
+        public T Value { get; set; }
+    }
+
+    private static async Task CheckMongoConnection(MongoConfig config)
+    {
+        await RunCheck("mongo", async () =>
+        {
+            var password = File.ReadAllText(config.PasswordFile);
+
+            var clientSetting = new MongoClientSettings()
+            {
+                Credential = MongoCredential.CreateCredential("admin", config.UserName, password),
+                Server = new MongoServerAddress(config.Host, config.Port),
+            };
+
+            var client = new MongoClient(clientSetting);
+
+            var database = client.GetDatabase("development");
+
+            var collection = database.GetCollection<MongoDocument<int>>("connectionTest");
+
+            await collection.InsertOneAsync(new MongoDocument<int> { Value = 789});
+
+            var list = await collection.Find(x => x.Value == 789).ToListAsync();
+
+            await collection.DeleteManyAsync(x => true);
+
+            return list[0].Value == 789;
+        });
+
     }
 }
