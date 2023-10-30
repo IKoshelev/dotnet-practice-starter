@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.8.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.16.0" />
     <PackageReference Include="dapper" Version="2.1.15" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-rc.2.23479.6" />

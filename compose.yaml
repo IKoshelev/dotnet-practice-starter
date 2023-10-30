@@ -14,6 +14,7 @@ services:
     secrets:
       - ms-sql-db-password
       - mongo-password
+      - azurite-well-known-key
     environment:
       - IS_DOCKER=TRUE
     # depends_on:
@@ -106,14 +107,56 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongo
       - ME_CONFIG_MONGODB_PORT=27017
       
+  azurite-storage:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    # azurite is an emulator, not for production,
+    # so it does not let you configure security,
+    # it uses well-known uesrName devstoreaccount1 and well-known key
+    # (see ./infrastructure/azurite-storage/well-known-key.txt)
+    #secrets: 
+    command: >
+      azurite -l /workspace -d /workspace/debug.log 
+      --blobHost 0.0.0.0 --blobPort 10000 
+      --queueHost 0.0.0.0 --queuePort 10001 
+      --tableHost 0.0.0.0 --tablePort 10002
+      --loose
+      --skipApiVersionCheck
+      --disableProductStyleUrl
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    # you can use either volume or bind to store files
+    volumes:
+      - type: volume
+        source: azurite-storage
+        target: /workspace
+      #- type: bind
+      #  source: ./infrastructure/azurite-storage/mount
+      #  target: /workspace
+    healthcheck: # not sure, if this does anytning?
+      test: nc 127.0.0.1 10000 -z
+      interval: 1s
+      retries: 30
+
 ## we wil mount folder instead 
 volumes:
   ms-sql-db-data:
   mongo-data:
   mongo-config:
+  azurite-storage:
 secrets:
   ms-sql-db-password:
     file: infrastructure/ms-sql-db/password.txt
   mongo-password:
     file: infrastructure/mongo/password.txt
+  azurite-well-known-key:
+    file: infrastructure/azurite-storage/well-known-key.txt
 

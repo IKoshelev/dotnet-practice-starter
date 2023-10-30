@@ -19,3 +19,14 @@ public sealed class MongoConfig
     public required string UserName { get; set; }
     public required string PasswordFile { get; set; }
 }
+
+public sealed class AzuriteStorageConfig
+{
+    public const string SectionPath = "infrastructure:azurite-storage";
+    public required string Host { get; set; }
+    public required int BlobPort { get; set; }
+    public required int QueuePort { get; set; }
+    public required int TablePort { get; set; }
+    public required string UserName { get; set; }
+    public required string PasswordFile { get; set; }
+}
