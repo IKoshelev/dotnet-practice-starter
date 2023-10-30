@@ -52,11 +52,67 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+
+  mongo:
+    image: mongo
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    secrets:
+      - mongo-password
+    # if you want to store DB in host - 
+    # switch /data/db volumes (mongo does not let you choose specific location per db)
+    volumes:
+      - type: volume
+        source: mongo-data
+        target: /data/db
+      # - type: bind
+      #   source: ./infrastructure/mongo/mount
+      #   target: /data/db
+      - type: volume
+        source: mongo-config
+        target: /data/configdb
+
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo-password
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # mongodb web admin tool
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    secrets:
+      - mongo-password
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=root
+      - ME_CONFIG_BASICAUTH_PASSWORD_FILE=/run/secrets/mongo-password
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD_FILE=/run/secrets/mongo-password
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
       
 ## we wil mount folder instead 
 volumes:
   ms-sql-db-data:
+  mongo-data:
+  mongo-config:
 secrets:
   ms-sql-db-password:
     file: infrastructure/ms-sql-db/password.txt
+  mongo-password:
+    file: infrastructure/mongo/password.txt
 
