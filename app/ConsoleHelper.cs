@@ -21,7 +21,7 @@ public static class ConsoleHelper
         return result;
     }
 
-    public static async Task RunCheck(
+    public static async Task<bool> RunCheck(
         string sectionName,
         Func<Task<bool>> checkFn)
     {
@@ -39,10 +39,13 @@ public static class ConsoleHelper
             {
                 Console.WriteLine($"{sectionNameBlue} connection check {Color(RED, "failed")}");
             }
+
+            return result;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"{sectionNameBlue} connection check threw {Color(RED, "exception")}. \r\n Exception message: {ex.Message}");
+            return false;
         }
     }
 }

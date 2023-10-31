@@ -1,12 +1,18 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Microsoft.Data.SqlClient;
+using Azure;
+using Azure.Data.Tables;
+using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Net;
 using System.Text;
+
 using static Practice.Csharp.ConsoleHelper;
-using Microsoft.Extensions.Configuration;
-using MongoDB.Driver;
-using MongoDB.Bson;
 
 namespace Practice.Csharp;
 
@@ -26,14 +32,31 @@ internal partial class Program
                 CheckMsSqlDbConnection(
                     rootConfiguration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!),
                 CheckMongoConnection(
-                    rootConfiguration.GetRequiredSection(MongoConfig.SectionPath).Get<MongoConfig>()!
+                    rootConfiguration.GetRequiredSection(MongoConfig.SectionPath).Get<MongoConfig>()!),
+                CheckAzuriteStorageConnection(
+                    rootConfiguration.GetRequiredSection(AzuriteStorageConfig.SectionPath).Get<AzuriteStorageConfig>()!)
                 )
-        ));
+        );
 
-        using var listener = new HttpListener();
+        TestHttpListener();
+    }
+
+    private static void TestHttpListener()
+    {
+        Console.WriteLine($"Starting HttpListener test");
+
+        var listener = new HttpListener();
         listener.Prefixes.Add("http://+:8080/");
 
-        listener.Start();
+        try
+        {
+            listener.Start();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{Color(RED, "HttpListener.Start")} failed. You may need to run as admin");
+            return;
+        }
 
         Console.WriteLine("Listening on port 8080...");
 
@@ -76,7 +99,7 @@ internal partial class Program
     {
         await RunCheck("ms-sql-db", async () =>
         {
-            var password = File.ReadAllText(config.PasswordFile);
+            var password = await File.ReadAllTextAsync(config.PasswordFile);
 
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
@@ -95,17 +118,17 @@ internal partial class Program
         });
     }
 
-    public class MongoDocument<T>
+    public class MongoDocumentExample
     {
         public ObjectId Id { get; set; }
-        public T Value { get; set; }
+        public int Value { get; set; }
     }
 
     private static async Task CheckMongoConnection(MongoConfig config)
     {
         await RunCheck("mongo", async () =>
         {
-            var password = File.ReadAllText(config.PasswordFile);
+            var password = await File.ReadAllTextAsync(config.PasswordFile);
 
             var clientSetting = new MongoClientSettings()
             {
@@ -117,9 +140,9 @@ internal partial class Program
 
             var database = client.GetDatabase("development");
 
-            var collection = database.GetCollection<MongoDocument<int>>("connectionTest");
+            var collection = database.GetCollection<MongoDocumentExample>("connectionTest");
 
-            await collection.InsertOneAsync(new MongoDocument<int> { Value = 789});
+            await collection.InsertOneAsync(new MongoDocumentExample { Value = 789 });
 
             var list = await collection.Find(x => x.Value == 789).ToListAsync();
 
@@ -127,6 +150,124 @@ internal partial class Program
 
             return list[0].Value == 789;
         });
+    }
 
+    public class AzureStorageTableExample : ITableEntity
+    {
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
+        public int Value { get; set; }
+    }
+    
+    private static async Task CheckAzuriteStorageConnection(AzuriteStorageConfig config)
+    {
+        await RunCheck("azurite-storage", async () =>
+        {
+            var password = await File.ReadAllTextAsync(config.PasswordFile);
+
+            return (await Task.WhenAll(
+                RunCheck("azurite-storage-blob", async () => await CheckBlobStorage(config, password)),
+                RunCheck("azurite-storage-queue", async () => await CheckQueueStorage(config, password)),
+                RunCheck("azurite-storage-table", async () => await CheckTableStorage(config, password))
+                )).All(x => x);
+
+            static async Task<bool> CheckBlobStorage(
+                AzuriteStorageConfig config, 
+                string password)
+            {
+                string blobUri = $"http://{config.Host}:{config.BlobPort}/{config.UserName}";
+
+                var blobServiceClient = new BlobServiceClient(
+                    new Uri(blobUri),
+                    new StorageSharedKeyCredential(config.UserName, password));
+
+                string containerName = "container-test";
+
+                BlobContainerClient containerClient = null;
+                try
+                {
+                    containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                    await containerClient.CreateIfNotExistsAsync();
+                    await containerClient.UploadBlobAsync("test-blob", new BinaryData("789"));
+                    var res = await containerClient.GetBlobClient("test-blob").DownloadContentAsync();
+                    return res.HasValue && res.Value.Content.ToString() == "789";
+                }
+                finally
+                {
+                    if (containerClient != null)
+                    {
+                        await containerClient.DeleteAsync();
+                    }
+                }
+            }
+
+            static async Task<bool> CheckQueueStorage(
+                AzuriteStorageConfig config, 
+                string password)
+            {
+                string queueUri = $"http://{config.Host}:{config.QueuePort}/{config.UserName}";
+
+                var queueServiceClient = new QueueServiceClient(
+                    new Uri(queueUri),
+                    new StorageSharedKeyCredential(config.UserName, password));
+
+                string queueName = "queue-est";
+
+                QueueClient queueClient = null;
+                try
+                {
+                    queueClient = queueServiceClient.GetQueueClient(queueName);
+                    await queueClient.CreateIfNotExistsAsync();
+                    await queueClient.SendMessageAsync("789");
+                    var res = await queueClient.ReceiveMessagesAsync(maxMessages: 1);
+                    return res.HasValue && res.Value.FirstOrDefault()?.Body.ToString() == "789";
+                }
+                finally
+                {
+                    if (queueClient != null)
+                    {
+                        await queueClient.DeleteAsync();
+                    }
+                }
+            }
+
+            static async Task<bool> CheckTableStorage(
+                AzuriteStorageConfig config,
+                string password)
+            {
+                string tableUri = $"http://{config.Host}:{config.TablePort}/{config.UserName}";
+
+                var serviceClient = new TableServiceClient(
+                    new Uri(tableUri),
+                    new TableSharedKeyCredential(config.UserName, password));
+
+                string tableName = "tableTest";
+
+                TableClient tableClient = null; 
+                try
+                {
+                    tableClient = serviceClient.GetTableClient(tableName);
+                    await tableClient.CreateIfNotExistsAsync();
+                    await tableClient.AddEntityAsync(new AzureStorageTableExample()
+                    {
+                        PartitionKey = "part-key-1",
+                        RowKey = "row-key-1",
+                        Value = 789
+                    });
+
+                    var res = await tableClient.GetEntityAsync<AzureStorageTableExample>("part-key-1", "row-key-1");
+                    return res.HasValue && res.Value.Value == 789;
+                }
+                finally
+                {
+                    if (tableClient != null)
+                    {
+                        await tableClient.DeleteAsync();
+                    }
+                }
+            }
+        });
     }
 }
