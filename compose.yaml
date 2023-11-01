@@ -2,14 +2,14 @@ version: "3.8"
 
 services:
 
-  dotnet-sdk:
+  app-console:
     build:
-      context: ./app # see ./app/Dockerfile
+      context: ./app-console # see ./app-console/Dockerfile
     ports:
       - 8080:8080
     volumes:
       - type: bind
-        source: ./app
+        source: ./app-console
         target: /source/app
     secrets:
       - ms-sql-db-password
