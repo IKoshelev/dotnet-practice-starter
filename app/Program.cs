@@ -239,8 +239,9 @@ internal partial class Program
             {
                 string tableUri = $"http://{config.Host}:{config.TablePort}/{config.UserName}";
 
+                //TODO this throws in Docker
                 var serviceClient = new TableServiceClient(
-                    new Uri(tableUri),
+                    new Uri(tableUri), 
                     new TableSharedKeyCredential(config.UserName, password));
 
                 string tableName = "tableTest";
