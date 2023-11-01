@@ -25,23 +25,24 @@ internal static class HostingExtensions
                 options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
                 options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
             })
-            .AddOpenIdConnect("oidc", "Demo IdentityServer", options =>
-            {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                options.SignOutScheme = IdentityServerConstants.SignoutScheme;
-                options.SaveTokens = true;
+            // .AddOpenIdConnect("oidc", "Demo IdentityServer", options =>
+            // {
+            //     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            //     options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+            //     options.SaveTokens = true;
 
-                options.Authority = "https://demo.duendesoftware.com";
-                options.ClientId = "interactive.confidential";
-                options.ClientSecret = SecretSource.Value.Result;
-                options.ResponseType = "code";
+            //     options.Authority = "https://demo.duendesoftware.com";
+            //     options.ClientId = "interactive.confidential";
+            //     options.ClientSecret = SecretSource.Value.Result;
+            //     options.ResponseType = "code";
 
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    NameClaimType = "name",
-                    RoleClaimType = "role"
-                };
-            });
+            //     options.TokenValidationParameters = new TokenValidationParameters
+            //     {
+            //         NameClaimType = "name",
+            //         RoleClaimType = "role"
+            //     };
+            // })
+            ;
 
         return builder.Build();
     }

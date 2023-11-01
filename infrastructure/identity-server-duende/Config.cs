@@ -37,15 +37,15 @@ public static class Config
         new List<Client> 
         {
             // machine-to-machine client (from quickstart 1)
-            new Client
-            {
-                ClientId = "client",
-                ClientSecrets = { new Secret(SecretSource.Value.Result.Sha256()) },
+            // new Client
+            // {
+            //     ClientId = "client",
+            //     ClientSecrets = { new Secret(SecretSource.Value.Result.Sha256()) },
                 
-                AllowedGrantTypes = GrantTypes.ClientCredentials,
-                // scopes that client has access to
-                AllowedScopes = { "api1" }
-            },
+            //     AllowedGrantTypes = GrantTypes.ClientCredentials,
+            //     // scopes that client has access to
+            //     AllowedScopes = { "api1" }
+            // },
             // interactive ASP.NET Core Web App
             new Client
             {
