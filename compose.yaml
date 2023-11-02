@@ -21,6 +21,24 @@ services:
     #    ms-sql-db:
     #      condition: service_healthy
     
+  # for learning purposes you can use hardcoded users from infrastructure\identity-server-duende\Pages\TestUsers.cs
+  # for more info check https://docs.duendesoftware.com/identityserver/v6/overview/
+  identity-server-duende:
+    build:
+      context: ./infrastructure/identity-server-duende
+    environment:
+      - ASPNETCORE_URLS=https://+:443;http://+80
+      - ASPNETCORE_HTTPS_PORT=5001
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=7bpKoengIEri4Hvk
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=./certificate/IdenttityServer.pfx
+    ports:
+      - 5000:5000
+      - 5001:5001
+    volumes:
+      - type: bind
+        source: ./infrastructure/identity-server-duende
+        target: /source/app
+  
   ms-sql-db:
     image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
     deploy:

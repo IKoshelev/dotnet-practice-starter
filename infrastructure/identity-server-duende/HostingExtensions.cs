@@ -18,13 +18,13 @@ internal static class HostingExtensions
             .AddTestUsers(TestUsers.Users);
 
         builder.Services.AddAuthentication()
-            .AddGoogle("Google", options =>
-            {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            // .AddGoogle("Google", options =>
+            // {
+            //     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
-                options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-                options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-            })
+            //     options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+            //     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+            // })
             // .AddOpenIdConnect("oidc", "Demo IdentityServer", options =>
             // {
             //     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
