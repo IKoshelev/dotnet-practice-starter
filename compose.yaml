@@ -139,7 +139,7 @@ services:
       
   azurite-storage:
     image: mcr.microsoft.com/azure-storage/azurite
-    hostname: azurite
+    hostname: azurite-direct-hostname-492.com # we need to emulate propper URL, or Azure.Storage.Queues fails
     deploy:
       restart_policy:
         condition: on-failure
