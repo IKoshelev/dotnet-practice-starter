@@ -32,7 +32,7 @@ internal partial class Program
                 CheckMsSqlDbConnection(
                     rootConfiguration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!),
                 CheckMongoConnection(
-                    rootConfiguration.GetRequiredSection(MongoConfig.SectionPath).Get<MongoConfig>()!),
+                    rootConfiguration.GetRequiredSection(MongoDocumentDbConfig.SectionPath).Get<MongoDocumentDbConfig>()!),
                 CheckAzuriteStorageConnection(
                     rootConfiguration.GetRequiredSection(AzuriteStorageConfig.SectionPath).Get<AzuriteStorageConfig>()!)
                 )
@@ -124,9 +124,9 @@ internal partial class Program
         public int Value { get; set; }
     }
 
-    private static async Task CheckMongoConnection(MongoConfig config)
+    private static async Task CheckMongoConnection(MongoDocumentDbConfig config)
     {
-        await RunCheck("mongo", async () =>
+        await RunCheck("mongo-document-db", async () =>
         {
             var password = await File.ReadAllTextAsync(config.PasswordFile);
 

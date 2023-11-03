@@ -11,9 +11,9 @@ public sealed class MsSqlDbConfig
     public required string PasswordFile { get; set; }
 }
 
-public sealed class MongoConfig
+public sealed class MongoDocumentDbConfig
 {
-    public const string SectionPath = "infrastructure:mongo";
+    public const string SectionPath = "infrastructure:mongo-document-db";
     public required string Host { get; set; }
     public required int Port { get; set; }
     public required string UserName { get; set; }

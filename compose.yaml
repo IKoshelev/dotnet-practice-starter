@@ -13,7 +13,7 @@ services:
         target: /source/app
     secrets:
       - ms-sql-db-password
-      - mongo-password
+      - mongo-document-db-password
       - azurite-well-known-key
     environment:
       - IS_DOCKER=TRUE
@@ -85,7 +85,7 @@ services:
       retries: 10
       start_period: 10s
 
-  mongo:
+  mongo-document-db:
     image: mongo
     deploy:
       restart_policy:
@@ -94,23 +94,23 @@ services:
         max_attempts: 3
         window: 120s
     secrets:
-      - mongo-password
+      - mongo-document-db-password
     # if you want to store DB in host - 
     # switch /data/db volumes (mongo does not let you choose specific location per db)
     volumes:
       - type: volume
-        source: mongo-data
+        source: mongo-document-db-data
         target: /data/db
       # - type: bind
-      #   source: ./infrastructure/mongo/mount
+      #   source: ./infrastructure/mongo-document-db/mount
       #   target: /data/db
       - type: volume
-        source: mongo-config
+        source: mongo-document-db-config
         target: /data/configdb
 
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo-password
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo-document-db-password
     ports:
       - 27017:27017
     healthcheck:
@@ -121,20 +121,20 @@ services:
       start_period: 10s
 
   # mongodb web admin tool
-  mongo-express:
+  mongo-document-db-express-web-ui:
     image: mongo-express
     restart: always
     ports:
       - 8081:8081
     secrets:
-      - mongo-password
+      - mongo-document-db-password
     environment:
       - ME_CONFIG_BASICAUTH_USERNAME=root
-      - ME_CONFIG_BASICAUTH_PASSWORD_FILE=/run/secrets/mongo-password
+      - ME_CONFIG_BASICAUTH_PASSWORD_FILE=/run/secrets/mongo-document-db-password
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD_FILE=/run/secrets/mongo-password
-      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_ADMINPASSWORD_FILE=/run/secrets/mongo-document-db-password
+      - ME_CONFIG_MONGODB_SERVER=mongo-document-db
       - ME_CONFIG_MONGODB_PORT=27017
       
   azurite-storage:
@@ -179,14 +179,14 @@ services:
 ## we wil mount folder instead 
 volumes:
   ms-sql-db-data:
-  mongo-data:
-  mongo-config:
+  mongo-document-db-data:
+  mongo-document-db-config:
   azurite-storage:
 secrets:
   ms-sql-db-password:
     file: infrastructure/ms-sql-db/password.txt
-  mongo-password:
-    file: infrastructure/mongo/password.txt
+  mongo-document-db-password:
+    file: infrastructure/mongo-document-db/password.txt
   azurite-well-known-key:
     file: infrastructure/azurite-storage/well-known-key.txt
 
