@@ -1,7 +1,7 @@
 To run the whole thing:
 
 ```powershell
-.\infrastructure\identity-server-duende\certificate\generate.ps1
+.\infrastructure\duende-identity-server\certificate\generate.ps1
 docker-compose up -d
 
 #or 
