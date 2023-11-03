@@ -7,4 +7,6 @@ docker-compose up -d
 #or 
 
 docker-compose down; docker-compose up --build -d 
+
+TODO check Swagger
 ```

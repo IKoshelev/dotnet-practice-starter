@@ -16,6 +16,8 @@ public class HomeController: Controller
     // GET: /Home/
     public IActionResult Index()
     {
+        _logger.LogInformation("Running index method, here is some int: {randomValue}", Random.Shared.Next());
+        
         return Ok("This is my default action... " + System.Text.Json.JsonSerializer.Serialize(new
         {
             Claims = User?.Claims?.Select(x => new {x.Type, x.Value})
