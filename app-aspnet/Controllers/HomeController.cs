@@ -5,7 +5,7 @@ using System.Text.Json;
 
 [Authorize]
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class HomeController: Controller
 {
     private readonly ILogger<HomeController> _logger;

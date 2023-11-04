@@ -6,15 +6,22 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
+using CorrelationId.DependencyInjection;
+using CorrelationId;
 
 var webAppBuilder = WebApplication.CreateBuilder(args);
 
-webAppBuilder.Services.AddRazorPages();
+webAppBuilder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AddPageRoute("/Index", "/Index.html");
+});
 webAppBuilder.Services.AddControllersWithViews();
 
 AddOIDCAuthentication(webAppBuilder);
 
 AddTelemetryAndLogging(webAppBuilder);
+
+webAppBuilder.Services.AddDefaultCorrelationId();
 
 webAppBuilder.Services.AddControllers();
 webAppBuilder.Services.AddEndpointsApiExplorer();
@@ -47,9 +54,10 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapRazorPages().RequireAuthorization();
 
-app.MapControllers();
+app.UseCorrelationId();
 
 app.Run();
 
