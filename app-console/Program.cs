@@ -87,7 +87,7 @@ internal partial class Program
 
         if (IsDocker)
         {
-            builder.AddJsonFile("appsettings.docker.json", false, true);
+            builder.AddJsonFile("appsettings.Docker.json", false, true);
         }
 
         IConfigurationRoot root = builder.Build();
