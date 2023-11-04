@@ -22,7 +22,7 @@ AddOIDCAuthentication(webAppBuilder);
 AddTelemetryAndLogging(webAppBuilder);
 
 webAppBuilder.Services.AddDefaultCorrelationId(options =>
-{ 
+{
     options.AddToLoggingScope = true;
 });
 
@@ -84,64 +84,6 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
         });
     };
 
-    var useTraceAndMetrics = false; // Seq does not yet support otlp traces and metrics
-
-    if (useTraceAndMetrics)
-    {
-        // https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/examples/AspNetCore/Program.cs
-        webAppBuilder.Services.AddOpenTelemetry()
-            .ConfigureResource(configureResource)
-            .WithTracing(traceProviderBuilder =>
-            {
-                // Tracing
-
-                // Ensure the TracerProvider subscribes to any custom ActivitySources.
-                traceProviderBuilder
-                    .AddSource("WebUI8824")
-                    .SetSampler(new AlwaysOnSampler())
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation();
-
-                // Use IConfiguration binding for AspNetCore instrumentation options.
-                //webAppBuilder.Services.Configure<AspNetCoreInstrumentationOptions>(appBuilder.Configuration.GetSection("AspNetCoreInstrumentation"));
-
-                traceProviderBuilder.AddOtlpExporter(otlpOptions =>
-                {
-                    otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/traces");
-                    otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
-                    //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
-                });
-
-#if DEBUG
-                traceProviderBuilder.AddConsoleExporter();
-#endif
-            })
-            .WithMetrics(metricsProvideBuilder =>
-            {
-                // Metrics
-
-                // Ensure the MeterProvider subscribes to any custom Meters.
-                metricsProvideBuilder
-                    .AddMeter("WebUI8824")
-                    .AddRuntimeInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation();
-
-                metricsProvideBuilder.AddOtlpExporter(otlpOptions =>
-                {
-                    // Use IConfiguration directly for Otlp exporter endpoint option.
-                    otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/metrics");
-                    otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
-                    //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
-                });
-
-#if DEBUG
-                //metricsProvideBuilder.AddConsoleExporter();
-#endif
-            });
-    }
-
-
     webAppBuilder.Logging.ClearProviders();
     webAppBuilder.Logging.AddOpenTelemetry(options =>
     {
@@ -157,13 +99,72 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
         {
             otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/logs");
             otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
-            //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
+            //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345"; // you can add a required instrumentation key in UI
         });
 
 #if DEBUG
         options.AddConsoleExporter();
 #endif
     });
+
+    var useTraceAndMetrics = false; // Seq does not yet support otlp traces and metrics
+    // if you are feeling ambitious - try assembling a full suite of opentelemetry 
+    // as described here https://opentelemetry.io/docs/demo/docker-deployment/
+    if (!useTraceAndMetrics)
+    {
+        return;
+    }
+    // https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/examples/AspNetCore/Program.cs
+    webAppBuilder.Services.AddOpenTelemetry()
+        .ConfigureResource(configureResource)
+        .WithTracing(traceProviderBuilder =>
+        {
+            // Tracing
+
+            // Ensure the TracerProvider subscribes to any custom ActivitySources.
+            traceProviderBuilder
+                .AddSource("WebUI8824")
+                .SetSampler(new AlwaysOnSampler())
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation();
+
+            // Use IConfiguration binding for AspNetCore instrumentation options.
+            //webAppBuilder.Services.Configure<AspNetCoreInstrumentationOptions>(appBuilder.Configuration.GetSection("AspNetCoreInstrumentation"));
+
+            traceProviderBuilder.AddOtlpExporter(otlpOptions =>
+            {
+                otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/traces");
+                otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+                //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
+            });
+
+#if DEBUG
+            traceProviderBuilder.AddConsoleExporter();
+#endif
+        })
+        .WithMetrics(metricsProvideBuilder =>
+        {
+            // Metrics
+
+            // Ensure the MeterProvider subscribes to any custom Meters.
+            metricsProvideBuilder
+                .AddMeter("WebUI8824")
+                .AddRuntimeInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation();
+
+            metricsProvideBuilder.AddOtlpExporter(otlpOptions =>
+            {
+                // Use IConfiguration directly for Otlp exporter endpoint option.
+                otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/metrics");
+                otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+                //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
+            });
+
+#if DEBUG
+            //metricsProvideBuilder.AddConsoleExporter();
+#endif
+        });
 }
 
 static void AddOIDCAuthentication(WebApplicationBuilder webAppBuilder)
