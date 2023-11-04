@@ -21,7 +21,10 @@ AddOIDCAuthentication(webAppBuilder);
 
 AddTelemetryAndLogging(webAppBuilder);
 
-webAppBuilder.Services.AddDefaultCorrelationId();
+webAppBuilder.Services.AddDefaultCorrelationId(options =>
+{ 
+    options.AddToLoggingScope = true;
+});
 
 webAppBuilder.Services.AddControllers();
 webAppBuilder.Services.AddEndpointsApiExplorer();
