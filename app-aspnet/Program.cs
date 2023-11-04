@@ -111,6 +111,7 @@ webAppBuilder.Services.AddControllers();
 webAppBuilder.Services.AddEndpointsApiExplorer();
 webAppBuilder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo() { Title = "WebUI8824", Version = "v1" });
     // using System.Reflection;
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
@@ -125,7 +126,10 @@ if (app.Environment.IsDevelopment())
     app.UseHsts();
 
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(config =>
+{
+    config.SwaggerEndpoint("/swagger/v1/swagger.json", "WebUI8824");
+});
 }
 
 //app.MapControllers();

@@ -4,6 +4,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 
 [Authorize]
+[ApiController]
+[Route("[controller]")]
 public class HomeController: Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -14,7 +16,8 @@ public class HomeController: Controller
     }
 
     // GET: /Home/
-    public IActionResult Index()
+    [HttpGet]
+    public IActionResult Get()
     {
         _logger.LogInformation("Running index method, here is some int: {randomValue}", Random.Shared.Next());
         
@@ -29,6 +32,7 @@ public class HomeController: Controller
     }
 
     // GET: /Home/Welcome/ 
+    [HttpGet("welcome")]
     public IActionResult Welcome()
     {
         return Ok("This is the Welcome action method...");
