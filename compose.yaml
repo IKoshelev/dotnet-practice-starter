@@ -41,7 +41,7 @@ services:
       - ./infrastructure/duende-identity-server/certificate/pass.env
     ports:
       - 5000:5000
-      - 5001:5001
+      - 5001:5001 # UI, ingress
     volumes:
       - type: bind
         source: ./infrastructure/duende-identity-server
@@ -51,22 +51,35 @@ services:
       interval: 5s
       retries: 30
   
-  jaeger-open-telemetry-logs:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
-      - "6831:6831/udp"
-      - "6832:6832/udp"
-      - "14269:14269"
-      - "14268:14268"
-      - "14250:14250"
-      - "5778:5778"
-      - "9411:9411"
+  seq-open-telemetry-logs:
+    image: datalust/seq
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    secrets:
+      - mongo-document-db-password
     environment:
-      - LOG_LEVEL=debug
-      - COLLECTOR_OTLP_ENABLED=true
+      - ACCEPT_EULA=Y
+    env_file:
+      - ./infrastructure/seq-open-telemetry-logs/password-hash.env
+    ports:
+      - 5340:80 # UI
+      - 5341:5341 # ingress
+    # you can use either volume or bind to store files
+    volumes:
+      - type: volume
+        source: seq-open-telemetry-logs
+        target: /data
+      # - type: bind
+      #   source: ./seq-open-telemetry-logs/mount
+      #   target: /data
+    healthcheck:
+      test: curl -k https://localhost:80
+      interval: 5s
+      retries: 30
 
   ms-sql-db:
     image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
@@ -90,9 +103,6 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD_FILE=/run/secrets/ms-sql-db-password 
-    ## switch from ports to expose if you don't need to access DB from hosting machine
-    #expose:
-    #  - 1433
     ports:
       - 1433:1433
     healthcheck:
@@ -124,7 +134,6 @@ services:
       - type: volume
         source: mongo-document-db-config
         target: /data/configdb
-
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo-document-db-password
@@ -199,6 +208,7 @@ volumes:
   mongo-document-db-data:
   mongo-document-db-config:
   azurite-storage:
+  seq-open-telemetry-logs:
 secrets:
   ms-sql-db-password:
     file: infrastructure/ms-sql-db/password.txt
