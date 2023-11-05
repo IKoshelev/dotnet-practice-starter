@@ -69,7 +69,7 @@ If you want to develop `app-aspnet` in container - run
 docker compose down; docker compose --profile infrastructure --profile app-aspnet up -d --build 
 ```
 
-SSH into container and in `/source/app` (default workdir in Dockerfile) run `dotnet run`. You will have to instruct your browser to trust certificate of Identity Server. This method also works with `app-console` profile.
+SSH into container and in `/source/app` (default workdir in Dockerfile) run `dotnet run`. Navigate to `https://localhost:5002/` You will have to instruct your browser to trust certificate of Identity Server. This method also works with `app-console` profile.
 
 ## Database management and persistance
 
