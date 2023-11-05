@@ -95,8 +95,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-    secrets:
-      - mongo-document-db-password
     environment:
       - ACCEPT_EULA=Y
     env_file:
@@ -242,7 +240,6 @@ services:
       interval: 1s
       retries: 30
 
-## we wil mount folder instead 
 volumes:
   ms-sql-db-data:
   mongo-document-db-data:
