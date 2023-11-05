@@ -12,10 +12,14 @@ using Practice.Aspnet;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using MongoDB.Driver;
+using Azure.Storage;
+using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 
 var webAppBuilder = WebApplication.CreateBuilder(args);
 
-var appName = webAppBuilder.Configuration["AppName"]!;
+var appName = webAppBuilder.Configuration["General:AppName"]!;
 
 webAppBuilder.Services.AddRazorPages(options =>
 {
@@ -46,7 +50,10 @@ webAppBuilder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-ConfigureStorageConnections(webAppBuilder);
+AddStorageConnections(webAppBuilder);
+webAppBuilder.Services.Configure<GeneralConfig>(
+    webAppBuilder.Configuration.GetRequiredSection(GeneralConfig.SectionPath)
+);
 
 var app = webAppBuilder.Build();
 
@@ -213,7 +220,7 @@ static void AddOIDCAuthentication(
         });
 }
 
-static void ConfigureStorageConnections(WebApplicationBuilder webAppBuilder)
+static void AddStorageConnections(WebApplicationBuilder webAppBuilder)
 {
     var msSqlDbConfig = webAppBuilder.Configuration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!;
     var msSqlDbPassword = File.ReadAllText(msSqlDbConfig.PasswordFile);
@@ -228,7 +235,7 @@ static void ConfigureStorageConnections(WebApplicationBuilder webAppBuilder)
     builder.Encrypt = true;
     builder.TrustServerCertificate = true;
 
-    webAppBuilder.Services.AddScoped<SqlConnection>(services => new SqlConnection(builder.ConnectionString));
+    webAppBuilder.Services.AddScoped<IDbConnection>(services => new SqlConnection(builder.ConnectionString));
 
     var mongoDocumentDbConfig = webAppBuilder.Configuration.GetRequiredSection(MongoDocumentDbConfig.SectionPath).Get<MongoDocumentDbConfig>()!;
     var mongoDocumentPassword = File.ReadAllText(mongoDocumentDbConfig.PasswordFile);
@@ -240,4 +247,25 @@ static void ConfigureStorageConnections(WebApplicationBuilder webAppBuilder)
     };
 
     webAppBuilder.Services.AddScoped<IMongoDatabase>(services => new MongoClient(mongoClientSetting).GetDatabase("development"));
+
+    
+    var azuriteStorageConfig = webAppBuilder.Configuration.GetRequiredSection(AzuriteStorageConfig.SectionPath).Get<AzuriteStorageConfig>()!;
+    var azuriteStoragePassword = File.ReadAllText(azuriteStorageConfig.PasswordFile);
+
+    var blobUri = new Uri($"http://{azuriteStorageConfig.Host}:{azuriteStorageConfig.BlobPort}/{azuriteStorageConfig.UserName}");
+    webAppBuilder.Services.AddScoped<BlobServiceClient>(services => new BlobServiceClient(
+            blobUri,
+            new StorageSharedKeyCredential(azuriteStorageConfig.UserName, azuriteStoragePassword)));
+
+    var queueUri = new Uri($"http://{azuriteStorageConfig.Host}:{azuriteStorageConfig.QueuePort}/{azuriteStorageConfig.UserName}");
+    webAppBuilder.Services.AddScoped<QueueServiceClient>(services => new QueueServiceClient(
+            queueUri,
+            new StorageSharedKeyCredential(azuriteStorageConfig.UserName, azuriteStoragePassword)));
+
+
+    var tableUri =  new Uri($"http://{azuriteStorageConfig.Host}:{azuriteStorageConfig.TablePort}/{azuriteStorageConfig.UserName}");
+    webAppBuilder.Services.AddScoped<TableServiceClient>(services => new TableServiceClient(
+        tableUri, 
+        new TableSharedKeyCredential(azuriteStorageConfig.UserName, azuriteStoragePassword)));
+
 }

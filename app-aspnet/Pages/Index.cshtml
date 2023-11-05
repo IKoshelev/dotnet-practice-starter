@@ -4,13 +4,28 @@
 
 @using Microsoft.AspNetCore.Authentication
 
-<h2>Storage connections:</h2>
+<h2>Logged User</h2>
 
-<h3>
-    ms-sql-db: if @(SuccessIndicator(await Model.TestMsSqlDbConnection()))
-    <br>
-    mongo-document-db: @(SuccessIndicator(await Model.TestMongoDocumentDbConnection()))
-</h3>
+<dl>
+    @foreach (var claim in User.Claims.Where(x => x.Type == "email"))
+    {
+        <dt>@claim.Type</dt>
+        <dd>@claim.Value</dd>
+    }
+</dl>
+
+<br/>
+<br/>
+<br/>
+
+<h2>Storage connections</h2>
+
+<h6>
+    @foreach (var (service, status) in await Model.CheckAllConnections())
+    {
+        <div>@service : @SuccessIndicator(status)</div>
+    }
+</h6>
 
 @functions {
 
@@ -19,15 +34,9 @@
         : new HtmlString($"<span style=\"color: red;\">FAIL</span>");
 }
 
-<h2>Logedin User Claims</h2>
-
-<dl>
-    @foreach (var claim in User.Claims)
-    {
-        <dt>@claim.Type</dt>
-        <dd>@claim.Value</dd>
-    }
-</dl>
+<br/>
+<br/>
+<br/>
 
 <h2>Authentication Properties</h2>
 
