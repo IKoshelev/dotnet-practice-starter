@@ -1,6 +1,6 @@
 # dotnet-practice-starter
 
-This repository contains a Docker Compose setup to practice modern Cloud DOTNET application development, specifically ASPNET.  
+This repository contains a Docker Compose setup and application skeleton to practice modern Cloud DOTNET application development, specifically ASPNET.  
 
 This starter is made with 3 goals in mind:
 
