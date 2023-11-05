@@ -5,6 +5,7 @@ services:
   app-console:
     build:
       context: ./app-console # see ./app-console/Dockerfile
+    profiles: [app-console]
     ports:
       - 8080:8080
     volumes:
@@ -24,6 +25,7 @@ services:
   app-aspnet:
     build:
       context: ./app-aspnet
+    profiles: [app-aspnet]
     ports:
       - 5002:5002
       - 5003:5003
@@ -56,6 +58,7 @@ services:
   duende-identity-server:
     build:
       context: ./infrastructure/duende-identity-server
+    profiles: [infrastructure]
     deploy:
       restart_policy:
         condition: on-failure
@@ -85,6 +88,7 @@ services:
   
   seq-open-telemetry-logs:
     image: datalust/seq
+    profiles: [infrastructure]
     deploy:
       restart_policy:
         condition: on-failure
@@ -115,6 +119,7 @@ services:
 
   ms-sql-db:
     image: mcr.microsoft.com/mssql/server:2022-CU9-ubuntu-20.04
+    profiles: [infrastructure]
     deploy:
       restart_policy:
         condition: on-failure
@@ -146,6 +151,7 @@ services:
 
   mongo-document-db:
     image: mongo
+    profiles: [infrastructure]
     deploy:
       restart_policy:
         condition: on-failure
@@ -181,6 +187,7 @@ services:
   # mongodb web admin tool
   mongo-document-db-express-web-ui:
     image: mongo-express
+    profiles: [mongo-ui]
     restart: always
     ports:
       - 8081:8081
@@ -197,6 +204,7 @@ services:
       
   azurite-storage:
     image: mcr.microsoft.com/azure-storage/azurite
+    profiles: [infrastructure]
     hostname: azurite-direct-hostname-492.com # we need to emulate propper URL, or Azure.Storage.Queues fails
     deploy:
       restart_policy:
