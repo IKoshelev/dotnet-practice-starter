@@ -73,7 +73,17 @@ public class IndexModel(
     {
         var resolvedTimeout = timeout ?? TimeSpan.FromSeconds(5);
         var result = await Task.WhenAny(
-            check(),
+            Task.Run(async () => 
+            {
+                try 
+                {
+                    return await check();
+                } 
+                catch
+                {
+                    return false;
+                }
+            }),
             Task.Delay(resolvedTimeout).ContinueWith((_) => false));
 
         return await result;
