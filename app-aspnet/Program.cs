@@ -203,11 +203,29 @@ static void AddOIDCAuthentication(
         .AddCookie("Cookies")
         .AddOpenIdConnect("oidc", options =>
         {
+            // TODO find way to specify separate URL for login
+            // or experiment with container network mode "host"
             options.Authority = config.Address;
-
+            //options.MetadataAddress = "https://127.0.0.1:5001/connect/authorize";
             options.ClientId = "web";
             options.ClientSecret = File.ReadAllText(config.ClientSecretFile);
+            options.RequireHttpsMetadata = config.RequireHttpsMetadata;
             options.ResponseType = "code";
+            //options.AuthorizationEndpoint = "https://127.0.0.1:5001/connect/authorize";
+
+            //Handle the certificate checks yourself to allow self-signed certificates
+            //https://stackoverflow.com/questions/60346955/how-do-i-allow-self-signed-certificates-to-be-accepted-by-kestrel-by-using-nativ
+            options.BackchannelHttpHandler = new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => {
+                    return true;
+                    // TODO check actual thumbpint
+                    // if (cert.Thumbprint == Configuration["TrustedCertificateThumbprint"])
+                    // {
+                    //         return true;
+                    // }                     
+                }
+            };
 
             options.Scope.Clear();
             options.Scope.Add("openid");

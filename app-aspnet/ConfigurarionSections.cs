@@ -41,6 +41,7 @@ public sealed class DuendeIdentityServerConfig
     public const string SectionPath = "Infrastructure:duende-identity-server";
     public required string Address { get; set; }
     public required string ClientSecretFile { get; set; }
+    public required bool RequireHttpsMetadata { get;set; } // TODO find way to make linux trust dev certificate 
 }
 
 public sealed class GeneralConfig

@@ -18,3 +18,4 @@ WORKDIR /source/app
 
 # Docker container needs at-least 1 running process, or it will exit
 CMD ["sleep", "infinity"] 
+#CMD ["dotnet", "run", "--urls=https://0.0.0.0:5002/", "-c", "Release"] 

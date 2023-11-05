@@ -1,7 +1,8 @@
 To run the whole thing:
 
 ```powershell
-.\infrastructure\duende-identity-server\certificate\generate.ps1
+Add-Content C:\Windows\System32\drivers\etc\hosts "127.0.0.1 duende-identity-server " #you will need to allow certificate in browser :-(
+.\certificate\generate.ps1
 docker-compose up -d
 
 #or 

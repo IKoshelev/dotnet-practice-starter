@@ -21,7 +21,37 @@ services:
     #    ms-sql-db:
     #      condition: service_healthy
     
-  # You can use hardcoded users from infrastructure\duende-identity-server\Pages\TestUsers.cs to start learning,
+  # when running app-aspnet manually in docker - don't forget 
+  # argument --urls=https://0.0.0.0:5002/ to make sure it allows trafic from outside localhost
+  app-aspnet:
+    build:
+      context: ./app-aspnet
+    ports:
+      - 5002:5002
+    volumes:
+      - type: bind
+        source: ./app-aspnet
+        target: /source/app
+      - type: bind
+        source: ./certificate/
+        target: /source/certificate
+    secrets:
+      - ms-sql-db-password
+      - mongo-document-db-password
+      - azurite-well-known-key
+      - duende-identity-server-client-secret
+    environment:
+      - DOTNET_ENVIRONMENT=Docker #overrieds ASPNETCORE_ENVIRONMENT specifically for  WebApplication.CreateBuilder
+      - ASPNETCORE_URLS=https://+:443;http://+80
+      - ASPNETCORE_HTTPS_PORT=5002
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/source/certificate/dev-certificate.pfx
+    env_file:
+      - ./certificate/pass.env
+    # depends_on:
+    #    ms-sql-db:
+    #      condition: service_healthy
+
+  # You can use hardcoded users from infrastructure\duende-identity-server\Pages\TestUsers.cs to start practice,
   # and overall Duende is a complete commercial offering which supports most of OAuth and OIDC,
   # for more info check https://docs.duendesoftware.com/identityserver/v6/overview/
   duende-identity-server:
@@ -36,9 +66,9 @@ services:
     environment:
       - ASPNETCORE_URLS=https://+:443;http://+80
       - ASPNETCORE_HTTPS_PORT=5001
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=./certificate/IdenttityServer.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/source/certificate/dev-certificate.pfx
     env_file:
-      - ./infrastructure/duende-identity-server/certificate/pass.env
+      - ./certificate/pass.env
     ports:
       - 5000:5000
       - 5001:5001 # UI, ingress
@@ -46,6 +76,9 @@ services:
       - type: bind
         source: ./infrastructure/duende-identity-server
         target: /source/app
+      - type: bind
+        source: ./certificate/
+        target: /source/certificate
     healthcheck:
       test: curl -k https://localhost:5001
       interval: 5s

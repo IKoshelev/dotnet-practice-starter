@@ -1,0 +1,85 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+	"name": "C# (.NET)",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-7.0-bullseye",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"moby": true,
+			"azureDnsAutoDetection": true,
+			"installDockerBuildx": true,
+			"version": "latest",
+			"dockerDashComposeVersion": "none"
+		},
+		"ghcr.io/devcontainers/features/powershell:1": {
+			"version": "latest"
+		}
+	},
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		5000,
+		5001,
+		5002
+	],
+	// "portsAttributes": {
+	// 		"5001": {
+	// 			"protocol": "https"
+	// 		}
+	// }
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "dotnet restore",
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"buster.ndjson-colorizer",
+				"humao.rest-client",
+				"me-dutour-mathieu.vscode-github-actions",
+				"mongodb.mongodb-vscode",
+				"ms-azure-devops.azure-pipelines",
+				"ms-azuretools.azure-dev",
+				"ms-azuretools.vscode-azureappservice",
+				"ms-azuretools.vscode-azurecontainerapps",
+				"ms-azuretools.vscode-azurefunctions",
+				"ms-azuretools.vscode-azureresourcegroups",
+				"ms-azuretools.vscode-azurestaticwebapps",
+				"ms-azuretools.vscode-azurestorage",
+				"ms-azuretools.vscode-azurevirtualmachines",
+				"ms-azuretools.vscode-bicep",
+				"ms-azuretools.vscode-cosmosdb",
+				"ms-azuretools.vscode-docker",
+				"ms-dotnettools.csharp",
+				"ms-dotnettools.dotnet-interactive-vscode",
+				"ms-dotnettools.vscode-dotnet-runtime",
+				"ms-mssql.data-workspace-vscode",
+				"ms-mssql.mssql",
+				"ms-mssql.sql-bindings-vscode",
+				"ms-mssql.sql-database-projects-vscode",
+				"ms-vscode-remote.remote-containers",
+				"ms-vscode-remote.remote-ssh",
+				"ms-vscode-remote.remote-ssh-edit",
+				"ms-vscode-remote.remote-wsl",
+				"ms-vscode-remote.vscode-remote-extensionpack",
+				"ms-vscode.azure-account",
+				"ms-vscode.azurecli",
+				"ms-vscode.cpptools",
+				"ms-vscode.hexeditor",
+				"ms-vscode.powershell",
+				"ms-vscode.remote-explorer",
+				"ms-vscode.remote-server",
+				"ms-vscode.vscode-node-azure-pack",
+				"ms-vsliveshare.vsliveshare",
+				"ms-vsliveshare.vsliveshare-pack",
+				"msazurermtools.azurerm-vscode-tools",
+				"redhat.vscode-yaml",
+				"shd101wyy.markdown-preview-enhanced",
+				"streetsidesoftware.code-spell-checker"
+			]
+		}
+	},
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
