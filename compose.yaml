@@ -21,13 +21,12 @@ services:
     #    ms-sql-db:
     #      condition: service_healthy
     
-  # when running app-aspnet manually in docker - don't forget 
-  # argument --urls=https://0.0.0.0:5002/ to make sure it allows trafic from outside localhost
   app-aspnet:
     build:
       context: ./app-aspnet
     ports:
       - 5002:5002
+      - 5003:5003
     volumes:
       - type: bind
         source: ./app-aspnet

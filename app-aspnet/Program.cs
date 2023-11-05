@@ -19,7 +19,8 @@ using Azure.Storage.Queues;
 
 var webAppBuilder = WebApplication.CreateBuilder(args);
 
-var appName = webAppBuilder.Configuration["General:AppName"]!;
+var configSectionGeneral = webAppBuilder.Configuration.GetRequiredSection(GeneralConfig.SectionPath).Get<GeneralConfig>()!;
+var appName = configSectionGeneral.AppName;
 
 webAppBuilder.Services.AddRazorPages(options =>
 {
@@ -205,6 +206,7 @@ static void AddOIDCAuthentication(
         {
             // TODO find way to specify separate URL for login
             // or experiment with container network mode "host"
+            // maybe https://stackoverflow.com/a/50272428/882936
             options.Authority = config.Address;
             //options.MetadataAddress = "https://127.0.0.1:5001/connect/authorize";
             options.ClientId = "web";
