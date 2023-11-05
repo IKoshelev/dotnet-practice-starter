@@ -140,6 +140,10 @@ internal partial class Program
 
             var database = client.GetDatabase("development");
 
+            var pingResult = await database.RunCommandAsync((Command<BsonDocument>)"{ping:1}");
+
+            var isPingSuccess = pingResult["ok"] == 1;
+
             var collection = database.GetCollection<MongoDocumentExample>("connectionTest");
 
             await collection.InsertOneAsync(new MongoDocumentExample { Value = 789 });
@@ -148,7 +152,7 @@ internal partial class Program
 
             await collection.DeleteManyAsync(x => true);
 
-            return list[0].Value == 789;
+            return isPingSuccess && list[0].Value == 789;
         });
     }
 

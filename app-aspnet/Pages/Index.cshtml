@@ -1,9 +1,25 @@
 ﻿@page
 @model IndexModel
+@using Microsoft.AspNetCore.Html;
 
 @using Microsoft.AspNetCore.Authentication
 
-<h2>Claims</h2>
+<h2>Storage connections:</h2>
+
+<h3>
+    ms-sql-db: if @(SuccessIndicator(await Model.TestMsSqlDbConnection()))
+    <br>
+    mongo-document-db: @(SuccessIndicator(await Model.TestMongoDocumentDbConnection()))
+</h3>
+
+@functions {
+
+    public static HtmlString SuccessIndicator(bool isSuccess) => isSuccess
+        ? new HtmlString($"<span style=\"color: green;\">OK</span>")
+        : new HtmlString($"<span style=\"color: red;\">FAIL</span>");
+}
+
+<h2>Logedin User Claims</h2>
 
 <dl>
     @foreach (var claim in User.Claims)
@@ -13,7 +29,7 @@
     }
 </dl>
 
-<h2>Properties</h2>
+<h2>Authentication Properties</h2>
 
 <dl>
     @foreach (var prop in (await HttpContext.AuthenticateAsync()).Properties.Items)

@@ -8,8 +8,14 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using CorrelationId.DependencyInjection;
 using CorrelationId;
+using Practice.Aspnet;
+using System.Data;
+using Microsoft.Data.SqlClient;
+using MongoDB.Driver;
 
 var webAppBuilder = WebApplication.CreateBuilder(args);
+
+var appName = webAppBuilder.Configuration["AppName"]!;
 
 webAppBuilder.Services.AddRazorPages(options =>
 {
@@ -17,9 +23,14 @@ webAppBuilder.Services.AddRazorPages(options =>
 });
 webAppBuilder.Services.AddControllersWithViews();
 
-AddOIDCAuthentication(webAppBuilder);
+AddOIDCAuthentication(
+    webAppBuilder,
+    webAppBuilder.Configuration.GetRequiredSection(DuendeIdentityServerConfig.SectionPath).Get<DuendeIdentityServerConfig>()!);
 
-AddTelemetryAndLogging(webAppBuilder);
+AddTelemetryAndLogging(
+    webAppBuilder, 
+    appName,
+    webAppBuilder.Configuration.GetRequiredSection(SeqIdentityServerConfig.SectionPath).Get<SeqIdentityServerConfig>()!);
 
 webAppBuilder.Services.AddDefaultCorrelationId(options =>
 {
@@ -30,10 +41,12 @@ webAppBuilder.Services.AddControllers();
 webAppBuilder.Services.AddEndpointsApiExplorer();
 webAppBuilder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo() { Title = "WebUI8824", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo() { Title = appName, Version = "v1" });
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
+
+ConfigureStorageConnections(webAppBuilder);
 
 var app = webAppBuilder.Build();
 
@@ -46,7 +59,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(config =>
     {
-        config.SwaggerEndpoint("/swagger/v1/swagger.json", "WebUI8824");
+        config.SwaggerEndpoint("/swagger/v1/swagger.json", appName);
     });
 }
 
@@ -64,15 +77,17 @@ app.UseCorrelationId();
 
 app.Run();
 
-static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
+static void AddTelemetryAndLogging(
+    WebApplicationBuilder webAppBuilder, 
+    string appName,
+    SeqIdentityServerConfig config)
 {
     // Build a resource configuration action to set service information.
     Action<ResourceBuilder> configureResource = (r) =>
     {
-
         r.AddService(
-            serviceName: "WebUI8824",
-            serviceNamespace: "Docker example",
+            serviceName: appName,
+            serviceNamespace: "Practice.Aspnet",
             serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
             serviceInstanceId: Environment.MachineName);
 
@@ -97,7 +112,7 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
 
         options.AddOtlpExporter(otlpOptions =>
         {
-            otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/logs");
+            otlpOptions.Endpoint = new Uri($"{config.Address}logs");
             otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
             //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345"; // you can add a required instrumentation key in UI
         });
@@ -123,7 +138,7 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
 
             // Ensure the TracerProvider subscribes to any custom ActivitySources.
             traceProviderBuilder
-                .AddSource("WebUI8824")
+                .AddSource(appName)
                 .SetSampler(new AlwaysOnSampler())
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation();
@@ -133,7 +148,7 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
 
             traceProviderBuilder.AddOtlpExporter(otlpOptions =>
             {
-                otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/traces");
+                otlpOptions.Endpoint = new Uri($"{config.Address}traces");
                 otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
                 //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
             });
@@ -148,7 +163,7 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
 
             // Ensure the MeterProvider subscribes to any custom Meters.
             metricsProvideBuilder
-                .AddMeter("WebUI8824")
+                .AddMeter(appName)
                 .AddRuntimeInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation();
@@ -156,7 +171,7 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
             metricsProvideBuilder.AddOtlpExporter(otlpOptions =>
             {
                 // Use IConfiguration directly for Otlp exporter endpoint option.
-                otlpOptions.Endpoint = new Uri("http://127.0.0.1:5341/ingest/otlp/v1/metrics");
+                otlpOptions.Endpoint = new Uri($"{config.Address}metrics");
                 otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
                 //otlpOptions.Headers = "X-Seq-ApiKey=abcde12345";
             });
@@ -167,7 +182,9 @@ static void AddTelemetryAndLogging(WebApplicationBuilder webAppBuilder)
         });
 }
 
-static void AddOIDCAuthentication(WebApplicationBuilder webAppBuilder)
+static void AddOIDCAuthentication(
+    WebApplicationBuilder webAppBuilder,
+    DuendeIdentityServerConfig config)
 {
     JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
@@ -179,10 +196,10 @@ static void AddOIDCAuthentication(WebApplicationBuilder webAppBuilder)
         .AddCookie("Cookies")
         .AddOpenIdConnect("oidc", options =>
         {
-            options.Authority = "https://localhost:5001";
+            options.Authority = config.Address;
 
             options.ClientId = "web";
-            options.ClientSecret = "k3pTjtr0DQAO9cteA6eue6DXcyQP6Oh5Q9VWxAxX7F0XcZTMgRbDoW91zotnzH2oYQSEnA9MqERpHTxQygWsV9cDmvHuW3CBagtu";
+            options.ClientSecret = File.ReadAllText(config.ClientSecretFile);
             options.ResponseType = "code";
 
             options.Scope.Clear();
@@ -194,4 +211,33 @@ static void AddOIDCAuthentication(WebApplicationBuilder webAppBuilder)
 
             options.SaveTokens = true;
         });
+}
+
+static void ConfigureStorageConnections(WebApplicationBuilder webAppBuilder)
+{
+    var msSqlDbConfig = webAppBuilder.Configuration.GetRequiredSection(MsSqlDbConfig.SectionPath).Get<MsSqlDbConfig>()!;
+    var msSqlDbPassword = File.ReadAllText(msSqlDbConfig.PasswordFile);
+
+    SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+    builder.DataSource = msSqlDbConfig.Address;
+    builder.UserID = msSqlDbConfig.UserName;
+    builder.Password = msSqlDbPassword;
+    builder.InitialCatalog = "master";
+    builder.MultipleActiveResultSets = true;
+    builder.Encrypt = true;
+    builder.TrustServerCertificate = true;
+
+    webAppBuilder.Services.AddScoped<SqlConnection>(services => new SqlConnection(builder.ConnectionString));
+
+    var mongoDocumentDbConfig = webAppBuilder.Configuration.GetRequiredSection(MongoDocumentDbConfig.SectionPath).Get<MongoDocumentDbConfig>()!;
+    var mongoDocumentPassword = File.ReadAllText(mongoDocumentDbConfig.PasswordFile);
+
+     var mongoClientSetting = new MongoClientSettings()
+    {
+        Credential = MongoCredential.CreateCredential("admin", mongoDocumentDbConfig.UserName, mongoDocumentPassword),
+        Server = new MongoServerAddress(mongoDocumentDbConfig.Host, mongoDocumentDbConfig.Port),
+    };
+
+    webAppBuilder.Services.AddScoped<IMongoDatabase>(services => new MongoClient(mongoClientSetting).GetDatabase("development"));
 }

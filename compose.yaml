@@ -216,4 +216,5 @@ secrets:
     file: infrastructure/mongo-document-db/password.txt
   azurite-well-known-key:
     file: infrastructure/azurite-storage/well-known-key.txt
-
+  duende-identity-server-client-secret:
+    file: infrastructure/duende-identity-server/secret.txt

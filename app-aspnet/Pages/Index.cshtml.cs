@@ -1,19 +1,38 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Data;
+using Dapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace WebClient.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel(
+        ILogger<IndexModel> logger,
+        SqlConnection dbConnection,
+        IMongoDatabase mongoDatabase) : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
 
-    public IndexModel(ILogger<IndexModel> logger)
+    //public bool dbConnectionIsOk = false;
+
+    public async Task OnGetAsync()
     {
-        _logger = logger;
+        //dbConnectionIsOk = await TestDbConnection();
     }
 
-    public void OnGet()
-    {
 
+    public async Task<bool> TestMsSqlDbConnection()
+    {
+        var result = (await dbConnection.QueryAsync<int>("SELECT 789")).ToArray();
+
+        return result[0] == 789;
+    }
+
+    public async Task<bool> TestMongoDocumentDbConnection()
+    {
+        var pingResult = await mongoDatabase.RunCommandAsync((Command<BsonDocument>)"{ping:1}");
+
+        return pingResult["ok"] == 1;
     }
 }
