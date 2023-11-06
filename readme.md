@@ -76,7 +76,7 @@ SSH into container or use VSCode extension to connect VSCode to it and in `/sour
 
 ## Database management and persistance
 
-Check `compose.yaml` `ports` section for each service to see, which ports are exposed. `volumes` section will have instructions how to save data in `host`. 
+Check `compose.yaml` `ports` section for each service to see, which ports are exposed. `volumes` section will have instructions how to save data in `host`. Remember, you can examine the contents of any `volume` in Docker and check data files there.
 
 ## Running devcontainer 
 
