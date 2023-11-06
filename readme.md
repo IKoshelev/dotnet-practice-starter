@@ -4,7 +4,7 @@ This repository contains a Docker Compose setup and application skeleton to prac
 
 This starter is made with 3 goals in mind:
 
-- Provide an ASPNET application skeleton with the typical enterprise **infrastructure**  already in place. This includes Identity Server for user authorization, logs storage setup via [OpenTelemetry](https://opentelemetry.io/), various databases, queue and file storage.
+- Provide an ASPNET application skeleton with typical enterprise **infrastructure**  already in place. This includes Identity Server for user authentication, logs storage setup via [OpenTelemetry](https://opentelemetry.io/), various databases, queue and file storage.
 - Showcase a Docker Compose setup that allows you to run a **mini-Cloud** on your personal machine. With a single `compose.yaml` file you can selectively spin-up everything you need.
 - Showcase [devcontainers](https://code.visualstudio.com/docs/devcontainers/containers) - as soon as base devcontainer for DOTNET 8 is released.
 
