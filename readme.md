@@ -62,7 +62,7 @@ Open page `https://localhost:5002/` and login with username: alice, password: al
 
 Navigate to `http://localhost:5340/` to see your application logs.
 
-Examine `.\app-console\Program.cs` or `.\app-aspnet\Pages\Index.cshtml.cs` to see how dependencies are used. 
+Examine [.\app-console\Program.cs](.\app-console\Program.cs) or [.\app-aspnet\Pages\Index.cshtml.cs](.\app-aspnet\Pages\Index.cshtml.cs) to see how dependencies are used. 
 
 ## Running app-aspnet in container
 
