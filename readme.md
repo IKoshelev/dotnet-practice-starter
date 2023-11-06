@@ -10,7 +10,7 @@ This starter is made with 3 goals in mind:
 
 ## Intended audience
 
-This starter is made for DOTNET students practicing ASPNET and Cloud development, Enterprise Developers looking for complete Docker Compose setup to try-out and Hackathon participants looking for quick DOTNET starter with infrastructure already setup. 
+This starter is made for DOTNET students practicing ASPNET and Cloud development, for Enterprise Developers looking for complete Docker Compose setup to try-out and for Hackathon participants needing a quick DOTNET starter with infrastructure already setup. 
 
 ## Required software and hardware
 
@@ -25,7 +25,7 @@ It's expected that you are running a machine with [VSCode](https://code.visualst
 Infrastructure: 
 |service name in compose.yaml|service type|description|
 -|-|-
-`azurite-storage` | Docker Image | [Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio) storage emulator based on [Azure Storage](https://learn.microsoft.com/en-us/azure/storage/) and providing Blobs, Queue Storage, and Table Storage
+`azurite-storage` | Docker Image | [Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio) storage emulator based on [Azure Storage](https://learn.microsoft.com/en-us/azure/storage/), provides Blobs, Queue Storage, and Table Storage
 `duende-identity-server` | ASPNET app with Dockerfile | [Duende Identity Server](https://duendesoftware.com/products/identityserver): [OAuth](https://oauth.net/2/) and [OIDC](https://openid.net/) server
 `mongo-document-db` | Docker Image | [Mongo document database](https://www.mongodb.com/)
 `ms-sql-db` | Docker Image | [Microsoft SQL Server 2022](https://www.microsoft.com/en-us/sql-server)
@@ -58,9 +58,11 @@ cd app-aspnet;
 dotnet run;
 ```
 
-Open page `https://localhost:5002/` and login with username: bob, password: bob or username: alice, password: alice. You should see a page with information about currently logged-in user abd DB connections statuses.
+Open page `https://localhost:5002/` and login with username: alice, password: alice or username: bob, password: bob. You should see a page with information about currently logged-in user abd DB connections statuses.
 
 Navigate to `http://localhost:5340/` to see your application logs.
+
+Examine `.\app-console\Program.cs` or `.\app-aspnet\Pages\Index.cshtml.cs` to see how dependencies are used. 
 
 ## Running app-aspnet in container
 
@@ -69,7 +71,7 @@ If you want to develop `app-aspnet` in container - run
 docker compose down; docker compose --profile infrastructure --profile app-aspnet up -d --build 
 ```
 
-SSH into container and in `/source/app` (default workdir in Dockerfile) run `dotnet run`. Navigate to `https://localhost:5002/` You will have to instruct your browser to trust certificate of Identity Server. This method also works with `app-console` profile.
+SSH into container or use VSCode extension to connect VSCode to it and in `/source/app` (default workdir in Dockerfile) run `dotnet run`. Navigate to `https://localhost:5002/` You will have to instruct your browser to trust certificate of Identity Server. This method also works with `app-console` profile.
 
 ## Database management and persistance
 
