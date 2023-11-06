@@ -78,4 +78,8 @@ SSH into container or use VSCode extension to connect VSCode to it and in `/sour
 
 Check `compose.yaml` `ports` section for each service to see, which ports are exposed. `volumes` section will have instructions how to save data in `host`. 
 
+## Running devcontainer 
+
+This repository contains a configured `.devcontainer`, in VSCode you can use command  "Dev Containers: Open Folder in Container". 
+
 
