@@ -1,22 +1,23 @@
 # dotnet-practice-starter
 
-This repository contains a Docker Compose setup and application skeleton to practice modern Cloud DOTNET application development, specifically ASPNET.  
+This repository contains a Docker Compose setup and application skeleton to practice modern cloud DOTNET application development, specifically ASPNET.  
 
 This starter is made with 3 goals in mind:
 
-- Provide an ASPNET application skeleton with typical enterprise **infrastructure**  already in place. This includes Identity Server for user authentication, logs storage setup via [OpenTelemetry](https://opentelemetry.io/), various databases, queue and file storage.
+- Provide an ASPNET application skeleton with typical enterprise **infrastructure**  already in place around it. This includes Identity Server for user authentication, logs storage setup via [OpenTelemetry](https://opentelemetry.io/), various databases, queue and file storage.
 - Showcase a Docker Compose setup that allows you to run a **mini-Cloud** on your personal machine. With a single `compose.yaml` file you can selectively spin-up everything you need.
-- Showcase [devcontainers](https://code.visualstudio.com/docs/devcontainers/containers) - as soon as base devcontainer for DOTNET 8 is released.
+- Showcase [devcontainers](https://code.visualstudio.com/docs/devcontainers/containers).
 
 ## Intended audience
 
-This starter is made for DOTNET students practicing ASPNET and Cloud development, for Enterprise Developers looking for complete Docker Compose setup to try-out and for Hackathon participants needing a quick DOTNET starter with infrastructure already setup. 
+This starter is made for DOTNET students practicing ASPNET and cloud development, for enterprise developers looking needing a complete Docker Compose setup to try-out and for Hackathon participants needing a quick DOTNET starter with infrastructure already setup. 
 
 ## Required software and hardware
 
-It's expected that you are running a machine with [VSCode](https://code.visualstudio.com/) with [Remote Development Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack), [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.3), [DOTNET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) and [Docker](https://www.docker.com/get-started/) installed (Docker Desktop is recommended). At least 16GB of RAM, 4-Core CPU and an SSD are recommended if you intend to run entire Docker Compose. Please also note, initial launch will require considerable time and web bandwidth, as it will download required Docker images. Containers use Linux-based images, but for **host** it's recommended to use Windows 10 or 11 based machine with [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) installed (as Mac and Linux testing are pending). 
+It's expected that you are running a machine with [VSCode](https://code.visualstudio.com/) with [Remote Development Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack), [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.3), [DOTNET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) and [Docker](https://www.docker.com/get-started/) installed (Docker Desktop is recommended). At least 16GB of RAM, 4-Core CPU and an SSD are recommended if you intend to run entire Docker Compose. Please also note, initial launch will require considerable time and web bandwidth, as it will download required Docker images. Containers use Linux-based images, for **host** you can use Windows 10 or 11 based machine with [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) installed, MacOS or Linux - all components are cross-platform. *For Linux you will need to handle trusting DEV certificates on your own, and it's not trivial*. 
 
 ## What's included
+
 - VSCode recommended extension lists, task and launch files
 - `app-console` application configured to use all databases in infrastructure
 - `app-aspnet` application configured to use all services in infrastructure
@@ -36,7 +37,7 @@ Infrastructure:
 Once you've cloned the repository, generate a dev-certificate trusted by your machine and available to Containers:
 
 ```powershell
-.\certificate\generate.ps1
+./certificate/generate.ps1
 ```
 
 Launch infrastructure services:
@@ -58,7 +59,7 @@ cd app-aspnet;
 dotnet run;
 ```
 
-Open page `https://localhost:5002/` and login with username: alice, password: alice or username: bob, password: bob. You should see a page with information about currently logged-in user abd DB connections statuses.
+Open page `https://localhost:5002/` and login with username: `alice`, password: `alice` or username: `bob`, password: `bob`. You should see a page with information about currently logged-in user and DB connections statuses.
 
 Navigate to `http://localhost:5340/` to see your application logs.
 

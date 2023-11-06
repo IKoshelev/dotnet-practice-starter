@@ -1,9 +1,9 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
 {
-	"name": "C# (.NET)",
+	"name": "dotnet-practice-starter",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/dotnet:1-7.0-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-20.04",
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
 			"moby": true,
@@ -14,6 +14,9 @@
 		},
 		"ghcr.io/devcontainers/features/powershell:1": {
 			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/dotnet:2": {
+			"version": "8.0"
 		}
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
@@ -22,7 +25,8 @@
 	"forwardPorts": [
 		5000,
 		5001,
-		5002
+		5002,
+		8080
 	],
 	// "portsAttributes": {
 	// 		"5001": {
