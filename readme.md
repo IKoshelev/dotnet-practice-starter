@@ -80,6 +80,6 @@ Check `compose.yaml` `ports` section for each service to see, which ports are ex
 
 ## Running devcontainer 
 
-This repository contains a configured `.devcontainer`, in VSCode you can use command  "Dev Containers: Open Folder in Container". 
+This repository contains a configured `.devcontainer`, in VSCode you can use command  "Dev Containers: Open Folder in Container". Devcontainer includes a selection of extension to access included databases from VSCode and otherwise facilitate development. 
 
 
