@@ -21,6 +21,7 @@ public class IndexModel(
 {
     public async Task OnGetAsync()
     {
+        logger.LogInformation("Rendering Index page.");
     }
 
     public async Task<(string, bool)[]> CheckAllConnections() => new[]
