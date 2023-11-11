@@ -6,32 +6,26 @@ using System.Text.Json;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class HomeController: Controller
+public class HomeController(
+    ILogger<HomeController> logger): Controller
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
-
-    // GET: /Home/
+    // GET: /api/Home/
     [HttpGet]
     public IActionResult Get()
     {
-        _logger.LogInformation("Running index method, here is some int: {randomValue}", Random.Shared.Next());
+        logger.LogInformation("Running index method, here is some int: {randomValue}", Random.Shared.Next());
         
-        return Ok("This is my default action... " + System.Text.Json.JsonSerializer.Serialize(new
+        return Json(new
         {
-            Claims = User?.Claims?.Select(x => new {x.Type, x.Value})
+            Claims = User?.Claims?.Select(x => new {x.Type, x.Value}).ToArray()
         }, 
         new JsonSerializerOptions()
         {
             WriteIndented = true
-        }));
+        });
     }
 
-    // GET: /Home/Welcome/ 
+    // GET: /api/Home/Welcome/ 
     [HttpGet("welcome")]
     public IActionResult Welcome()
     {
