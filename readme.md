@@ -61,7 +61,7 @@ dotnet run;
 
 Open page `https://localhost:5002/` and login with username: `alice`, password: `alice` or username: `bob`, password: `bob`. You may need to instruct browser to trust dev-certificate. You should see a page with information about currently logged-in user and DB connections statuses.
 
-Navigate to `http://localhost:5340/` to see your application logs. Login is `admin`, password is in file [./infrastructure/seq-open-telemetry-logs/password-hash-write.ps1](/infrastructure/seq-open-telemetry-logs/password-hash-write.ps1).
+Navigate to `http://localhost:5340/` to see your application logs. Login is `admin`, password is in file [./infrastructure/seq-open-telemetry-logs/password-hash-write.ps1](/infrastructure/seq-open-telemetry-logs/password-hash-write.ps1). *This file also shows how to use Docker to distribute and run scripts, it essentialy uses image as an isolated executable with 0 dependencies on hosting OS*. 
 
 Examine [./app-console/Program.cs](/app-console/Program.cs) or [./app-aspnet/Pages/Index.cshtml.cs](/app-aspnet/Pages/Index.cshtml.cs) to see how dependencies are used. 
 
